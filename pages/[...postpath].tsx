@@ -4,15 +4,11 @@ import { GetServerSideProps } from "next";
 import { GraphQLClient, gql } from "graphql-request";
 
 export const getServerSideProps: GetServerSideProps = async (ctx: any) => {
-  ctx.res.setHeader("Cache-Control", "public, s-maxage=604800");
   const endpoint = process.env.GRAPHQL_ENDPOINT as string;
-  const graphQLClient = new GraphQLClient(endpoint);
   const referringURL = ctx.req.headers?.referer || null;
   const pathArr = ctx.query.postpath as Array<string>;
   const path = pathArr.join("/");
-  console.log(path);
   const fbclid = ctx.query.fbclid;
-
   // redirect if facebook is the referer or request contains fbclid
   if (referringURL?.includes("facebook.com") || fbclid) {
     return {
@@ -24,6 +20,9 @@ export const getServerSideProps: GetServerSideProps = async (ctx: any) => {
       },
     };
   }
+  
+  ctx.res.setHeader("Cache-Control", "public, s-maxage=604800");
+  const graphQLClient = new GraphQLClient(endpoint);
   const query = gql`
 		{
 			post(id: "/${path}/", idType: URI) {
